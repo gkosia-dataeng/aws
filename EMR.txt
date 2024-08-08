@@ -1,0 +1,69 @@
+https://www.youtube.com/watch?v=8bOgOvz6Tcg
+
+Intro to Amazon EMR: Elastic MapReduce, managed clustered platform (on-demand spinup of clusters)
+                     Used to provision clusters of Big data frameworks like: Hive, Soark, Flink, Presto
+
+        By default use YARN cluster for resource manager (hadoop cluster, Resource manager, Node managers)
+
+
+        Architecture:
+
+            Primary node: coordinates distribution if data and tasks. Track status and monitor health
+            Core node:    run tasks and store data in HDFS
+            Task node:    (OPTIONAL) run tasks but not store data
+
+
+        EMR is elastic: can be configured to autoscale 
+                        Min/Max cluster size (number of instaces)
+                        Max core nodes in cluster
+                        Max on-demand instances in cluster (spot instances or on-demand instances, how many from 'Max cluster size' will be in on-demand, the rest to spot instances)
+
+
+        Running an EMR job:
+
+            From Managment console
+            SSH to primary node and run manual
+            AWS cli (recommended)
+
+        EMR compute resources:
+
+            ec2: default, high performance but expensive
+            eks: used to run light-weight applications
+            serverless: small, low code apps 
+
+
+        Crate EMR from console:
+
+            Name
+            Application bundle: spark, flink, hadoop, hbase...
+            Cluster configuration: 
+                Instance groups: one instance type per node group 
+                Instance fleets: combination of instace types in each node group
+            Primary node instance type
+            Core node instance type
+            Number of nodes
+            Cluster termination
+            Cluster logs location
+            EMR service role            
+
+        Run the job:
+
+            To run a job from console:
+                Go to EMR -> Add step
+                          -> Spark application
+                             set 
+                                 name
+                                ,application location (where the app.py file exits in s3)
+                                ,
+            To ssh to cluster and run from Primary node:
+
+                    1. Go to ec2 -> security groups
+                        Find security group related to Master node 
+                        Add inbound rule on security group Type SSH, Source type <my IP>
+                    2. Get the command from 'Connect to the Primary Node using SSH' in cluster summary
+                    3. Create the spark job file.py 
+                    4. run the spark submit command from there 
+
+            To run from AWS cli:
+
+                    Use the: aws emr add-steps command

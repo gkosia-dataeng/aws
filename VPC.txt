@@ -1,0 +1,4 @@
+VPC
+Subnets (private/public)
+Route table
+Internet gateway
