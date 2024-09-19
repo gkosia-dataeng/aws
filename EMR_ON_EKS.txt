@@ -1,0 +1,75 @@
+https://www.youtube.com/watch?v=j3xcbm1uxd0:
+
+Its a deployment option of EMR to run open source software big data framework on EKS
+Build, configure and manage the containers of OSS apps
+Leverage existing infru of EKS and having a centralize place to manage compute resources
+
+
+Runtime:
+
+    On eks can have multiple namespaces
+    Each namespace can use different runtime
+
+
+Architecture:
+
+    EKS cluster:
+        Virtual EMD clusters: (namespaces in eks) 
+                job execution role (iam)
+                service link role: the role that the EMR use to speak with EKS (rbac)
+
+
+    Team submit the job to EMR using EMR API
+    The EMR will talk to EKS to spinup the job
+    EKS will launch the Job Submitter
+    Job Submitter will start the Spark Driver 
+    Spark Driver will create Spark Executors
+    Spark Driver and Spark Executors will run using the Execution role
+
+
+
+Benefits:
+
+    Cost optimization: simplify infru, workload managment consolidation (leverage single eks cluster)
+                       utilize ec2 spot instances, saving plans
+                       reduce cost with dynamic pod autoscaling (change cpu, memory resource config based on job needs)
+                       pay per use (cpu, memory)
+
+    Centralize and unified data governance: new OSS versions within 30 days with 100% OSS compatibility
+
+    Performance: HA and Failover, fast cluster startup and scaling (using k8 ) 
+
+    Productivity: running interactive workloads using EMR studio
+                  native integration with AWS Step functions, MWAA, Redshift, Glue Catalog..
+                  Monitor from cloudwatch, Prometheus/Grafana
+
+    
+    Admin: 
+            same infru for all apps (apps consolidation)
+            faaster cluster pod, scaling (k8 native)
+            Multi AZ resilient
+
+
+
+
+Submit job options:
+    cli, MWAA, emr studio, step functions
+
+
+
+
+
+https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/emr-eks.html:
+
+    common pool of resources without having to provision infrastructure
+    use EMR studio, aws sdk, aws cli to develop, submit, monitor apps on eks
+
+
+
+    https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/emr-eks-concepts.html
+
+    A virtual cluster is a Kubernetes namespace that Amazon EMR is registered with
+    Amazon EMR uses virtual clusters to run jobs and host endpoints
+    Each virtual cluster maps to one namespace on an EKS cluster
+
+

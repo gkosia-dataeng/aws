@@ -2,6 +2,7 @@ https://www.youtube.com/watch?v=8bOgOvz6Tcg
 
 Intro to Amazon EMR: Elastic MapReduce, managed clustered platform (on-demand spinup of clusters)
                      Used to provision clusters of Big data frameworks like: Hive, Soark, Flink, Presto
+                     Dynamically  scalable haddop clusters
 
         By default use YARN cluster for resource manager (hadoop cluster, Resource manager, Node managers)
 

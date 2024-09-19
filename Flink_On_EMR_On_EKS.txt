@@ -1,0 +1,143 @@
+https://aws.amazon.com/blogs/big-data/introducing-amazon-emr-on-eks-with-apache-flink-a-scalable-reliable-and-efficient-data-processing-platform/
+
+
+    Takes care of the undifferentiated heavy lifting of managing installations, configuration, patching, and backups
+    Simplifies scaling
+    Optimizes performance and cost
+
+
+
+    Scalability:
+        the Flink auto scaler will increase the applications’ parallelism based on the data being ingested
+
+    Verions:
+
+        allows you to run multiple versions of Flink on the same cluster
+        containerizing Flink applications allows you to isolate versions and avoid conflicting dependencies
+        containerizing Flink reuse existing cicd pipelines
+        agility to upgrade a single job to the next version
+
+
+
+    Faster restart of the Flink job during scaling or failure recovery
+
+        Task local recovery via EBS volumes for TaskManager pods is available with Amazon EMR 6.15.0 and higher
+
+        Fine-grained recovery support in the adaptive scheduler is available with Amazon EMR 6.15.0 and higher
+        fine-grained recovery restarts only the pipeline-connected component of the failed task, instead of resetting the entire graph
+        and triggers a complete rerun from the last completed checkpoint
+
+
+    Amazon EMR on EKS with Apache Flink releases 6.15.0 and higher support using the Data Catalog as a metadata store for streaming and batch SQL workflows
+
+
+
+    Integration with Amazon S3: 
+        store jars, scripts, persist managed state (checkpoint location)
+
+        We recommend using Presto S3 (s3p) for checkpointing and s3 or s3a for reading and writing files including JARs and scripts. See the following code
+
+
+    Role based access:
+
+        One role for Flink operator
+        One role for flink job
+
+        Isolate permissions for better audit
+
+
+
+https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/run-flink-jobs.html
+
+    1. Setup Flink operator for EMR on EKS:
+        a. Choose an EMR release 
+        b. Enable IAM roles for Service Accounts on EKS
+        c. Create the iam job execution role
+        d. Update truct policy of the job execution role for EKS
+
+    2. Install Flink operator:
+        a. Install the cert-manager
+        b. install hellm chart
+        c. verify the installation
+
+    3. Submit a job:
+
+        Create a FlinkDeployment deployment
+            parameters like: number of slots, checkpoint/savepoint locations, job execution role, jobmanager/taskmanager resources
+                             CAN DECLARE CUSTOM IMAGE
+    
+    4. Monitor:
+        kubectl port-forwart: view from local the webUI
+        can setup Managed Service for Prometheus and enable it on flink-kubernetes-operator
+
+        Archive logs to s3/cloudwatch
+        monitoringConfiguration:
+            s3MonitoringConfiguration:
+                logUri: S3 BUCKET
+            cloudWatchMonitoringConfiguration:
+                logGroupName: LOG GROUP NAME
+                logStreamNamePrefix: LOG GROUP STREAM PREFIX
+
+    5. Unistall:
+
+        delete operator
+        delete service account, deployments
+        delete cert-manager
+
+
+    Configuariotn:
+
+        Job resiliency: Faster loading and Recovery
+            Task-local recovery:  scheduler schedules the tasks on the same Task Manager where the tasks ran earlier so that they can recover from the local state store instead of reading from the remote state store
+            Task-local recovery by Amazon EBS volume mount: The TaskManager pods are automatically created and mounted during pod creation and removed during pod deletion
+            Generic log-based incremental checkpointing: A faster checkpoint interval often results in a reduction of recovery work because fewer events need to be reprocessed
+            Fine-grained recovery:  restarts only the pipeline-connected component of the failed task
+
+     
+
+
+IaC: https://awslabs.github.io/data-on-eks/docs/blueprints/streaming-platforms/emr-eks-flink
+
+
+     Once you deploy the Flink Kubernetes operator in your Amazon EKS cluster
+     The operator manage to:
+        Running, suspending and deleting applications
+        Stateful and stateless application upgrades
+        Triggering and managing savepoints
+        Handling errors, rolling-back broken upgrades
+
+    EMR Flink Kubernetes operator provides:
+        Launching Flink application using jars in Amazon S3
+        Monitoring integration with Amazon S3 and Amazon CloudWatch and container log rotation.
+        Automatically tunes Autoscaler configurations based on historical trends of observed metrics.
+        Faster Flink Job Restart during scaling or Failure Recovery
+        IRSA (IAM Roles for Service Accounts) Native Integration
+        Pyflink support
+
+
+    Flink operator custom resources on EKS:
+
+        FlinkDeployment:
+            Flink Application deployment (recommended):  manage a single job deployment on a dedicated Flink cluster in Application mode
+            Session Cluster deployment:                  allows you to run multiple Flink Jobs on an existing Session cluster
+
+
+            Modes of deployments:
+                Native (default, recommended): communicates directly with Kubernetes and allows it to manage Kubernetes resources
+                                               allows for more flexibility in terms of job scheduling and execution
+
+                Standalone:   uses Kubernetes as an orchestration platform that the Flink cluster is running on.
+                              Flink is unaware that it is running on Kubernetes and therefore all Kubernetes resources need to be managed externally
+
+        FlinkSessionJob:
+
+            Session cluster: each Session cluster can run multiple FlinkSessionJob
+
+
+    
+    Lifecycle:
+
+        Write Flink deployment files
+        Apply the deployments on eks
+        Flink Operator will communicate with Job Manager Service (deploy, upgrade, Monitor)
+        Job Manager Service will start the JobManager and TaskManager of the job cluster
